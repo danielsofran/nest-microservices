@@ -69,7 +69,8 @@
         },
         "configurations": {
           "development": {
-            "buildTarget": "@org/mail-service:build:development"
+            "buildTarget": "@org/mail-service:build:development",
+            "watch": true
           },
           "production": {
             "buildTarget": "@org/mail-service:build:production"

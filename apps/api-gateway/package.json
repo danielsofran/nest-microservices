@@ -64,11 +64,13 @@
         ],
         "options": {
           "buildTarget": "@org/api-gateway:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "watch": true
         },
         "configurations": {
           "development": {
-            "buildTarget": "@org/api-gateway:build:development"
+            "buildTarget": "@org/api-gateway:build:development",
+            "watch": true
           },
           "production": {
             "buildTarget": "@org/api-gateway:build:production"

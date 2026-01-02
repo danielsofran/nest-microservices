@@ -9,9 +9,13 @@ import { ClientNames } from './client.names';
     ClientsModule.register([
       {
         name: ClientNames.MAIL_SERVICE,
-        transport: Transport.TCP,
+        transport: Transport.RMQ,
         options: {
-          port: 7001,
+          urls: ['amqp://admin:admin@localhost:' + 5672],
+          queue: 'mails',
+          queueOptions: {
+            durable: false
+          },
         },
       },
     ]),

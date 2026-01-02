@@ -21,9 +21,13 @@ async function bootstrap() {
 
   // Then create microservice with config port
   app.connectMicroservice({
-    transport: Transport.TCP,
+    transport: Transport.RMQ,
     options: {
-      port: port,
+      urls: ['amqp://admin:admin@localhost:' + 5672],
+      queue: 'mails',
+      queueOptions: {
+        durable: false
+      },
     }
   });
 
