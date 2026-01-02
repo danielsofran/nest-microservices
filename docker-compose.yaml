@@ -46,5 +46,15 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
+  postgres-users:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin  # Password for postgres user
+      POSTGRES_PASSWORD: admin  # Password for postgres user
+      POSTGRES_DB: users_db  # Default database
+    ports:
+      - "9000:5432"
+
 volumes:
   rabbitmq_data:
+  postgres_data:
