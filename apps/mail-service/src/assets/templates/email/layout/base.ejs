@@ -1,0 +1,166 @@
+<%
+// Type colors
+const typeColors = {
+    info: '#17a2b8',
+    success: '#28a745',
+    warning: '#ffc107',
+    error: '#dc3545'
+};
+
+const color = typeColors[type] || typeColors.info;
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-header {
+            background: <%= color %>;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .email-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .email-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .email-content {
+            padding: 40px 30px;
+        }
+
+        .message-box {
+            background: #f8f9fa;
+            border-left: 4px solid <%= color %>;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .message-box p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .info-section {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .info-value {
+            color: #6c757d;
+        }
+
+        .email-footer {
+            background: #343a40;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer-text {
+            margin-bottom: 10px;
+        }
+
+        .timestamp {
+            color: #adb5bd;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .email-content {
+                padding: 20px 15px;
+            }
+
+            .email-header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <h1><%= title %></h1>
+        <div class="email-badge"><%= type %></div>
+    </div>
+
+    <div class="email-content">
+        <!-- Main content will be injected here -->
+        <%- body %>
+    </div>
+
+    <div class="email-footer">
+        <div class="footer-text">
+            This email was sent automatically from our system. Please do not reply to this message.
+        </div>
+        <div class="timestamp">
+            Sent on <%= sentAt %>
+        </div>
+        <div class="timestamp">
+            &copy; <%= year %> Our Organization. All rights reserved.
+        </div>
+    </div>
+</div>
+</body>
+</html>

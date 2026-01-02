@@ -1,0 +1,38 @@
+<%- include('./layout/base', {
+title: 'Email Test',
+message: message,
+type: type,
+sentAt: sentAt || new Date().toLocaleString(),
+body: `<div class="message-box">
+<p>` + message + `</p>
+</div>
+
+<div class="info-section">
+<h3 style="margin-bottom: 15px; color: #495057;">Email Details</h3>
+
+<div class="info-item">
+<span class="info-label">Type:</span>
+<span class="info-value" style="text-transform: capitalize;">` + type + `</span>
+</div>
+
+<div class="info-item">
+<span class="info-label">Template:</span>
+<span class="info-value">test-template.ejs</span>
+</div>
+
+<div class="info-item">
+<span class="info-label">System:</span>
+<span class="info-value">NestJS Mailer with Gmail SMTP</span>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+<p style="color: #6c757d; margin-bottom: 15px;">
+This is a test email to verify our email system configuration.
+</p>
+<div style="background: #e9ecef; padding: 15px; border-radius: 8px; display: inline-block;">
+<strong>Status:</strong>
+<span style="color: #28a745;">✓ System is working properly</span>
+</div>
+</div>`
+}) %>

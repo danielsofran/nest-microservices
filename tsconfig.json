@@ -2,5 +2,18 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./apps/api-gateway"
+    },
+    {
+      "path": "./apps/mail-service"
+    },
+    {
+      "path": "./apps/payment-service"
+    },
+    {
+      "path": "./apps/products-service"
+    }
+  ]
 }
