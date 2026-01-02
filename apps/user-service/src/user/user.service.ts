@@ -36,6 +36,12 @@ export class UserService {
     })
   }
 
+  async findAdminUserMails() {
+    return await this.usersRepository.find({
+      where: { role: 'admin' },
+    }).then(users => users.map(user => user.email))
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto) {
     const entity = await this.usersRepository.findOneBy({ id })
     const updated = await this.usersRepository.save({

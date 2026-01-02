@@ -19,26 +19,26 @@ export class UserController {
 
   @Post()
   create(@Body() createUserDto: object) {
-    return this.userService.send("createUser", createUserDto)
+    return this.userService.send("create", createUserDto)
   }
 
   @Get()
   findAll() {
-    return this.userService.send("findAllUser", {})
+    return this.userService.send("findAll", {})
   }
 
   @Get(":id")
   findOne(@Param("id") id: number) {
-    return this.userService.send("findOneUser", id)
+    return this.userService.send("findOne", id)
   }
 
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateUserDto: object) {
-    return this.userService.send("updateUser", { id, ...updateUserDto })
+    return this.userService.send("update", { id, ...updateUserDto })
   }
 
   @Delete(":id")
   remove(@Param("id") id: number) {
-    return this.userService.send("removeUser", id)
+    return this.userService.send("remove", id)
   }
 }

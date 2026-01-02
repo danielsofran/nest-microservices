@@ -55,6 +55,15 @@ services:
     ports:
       - "9000:5432"
 
+  postgres-products:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin  # Password for postgres user
+      POSTGRES_PASSWORD: admin  # Password for postgres user
+      POSTGRES_DB: products_db  # Default database
+    ports:
+      - "9001:5432"
+
 volumes:
   rabbitmq_data:
   postgres_data:

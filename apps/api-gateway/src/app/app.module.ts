@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ClientNames } from './client.names';
 import { UserController } from './users.controller';
+import { ProductsController } from './products.controller';
 
 @Module({
   imports: [
@@ -30,9 +31,20 @@ import { UserController } from './users.controller';
           },
         },
       },
+      {
+        name: ClientNames.PRODUCTS_SERVICE,
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://admin:admin@localhost:5672'],
+          queue: 'product_queue',
+          queueOptions: {
+            durable: true
+          },
+        },
+      },
     ]),
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController, UserController, ProductsController],
   providers: [AppService],
 })
 export class AppModule {}

@@ -8,17 +8,17 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @MessagePattern('createUser')
+  @MessagePattern('create')
   create(@Payload() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @MessagePattern('findAllUser')
+  @MessagePattern('findAll')
   findAll() {
     return this.userService.findAll();
   }
 
-  @MessagePattern('findOneUser')
+  @MessagePattern('findOne')
   findOne(@Payload() id: number) {
     return this.userService.findOne(+id);
   }
@@ -28,12 +28,17 @@ export class UserController {
     return this.userService.findOneByEmail(email);
   }
 
-  @MessagePattern('updateUser')
+  @MessagePattern('findAdminMails')
+  findAdmins() {
+    return this.userService.findAdminUserMails();
+  }
+
+  @MessagePattern('update')
   update(@Payload() updateUserDto: UpdateUserDto) {
     return this.userService.update(+updateUserDto.id, updateUserDto);
   }
 
-  @MessagePattern('removeUser')
+  @MessagePattern('remove')
   remove(@Payload() id: number) {
     return this.userService.remove(+id);
   }
