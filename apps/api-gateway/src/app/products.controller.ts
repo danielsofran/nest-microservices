@@ -5,11 +5,13 @@ import {
   Body,
   Patch,
   Param,
-  Delete, Inject
+  Delete, Inject, UseGuards
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ClientNames } from './client.names';
+import { PasswordGuard } from './password.guard';
 
+@UseGuards(PasswordGuard)
 @Controller("products")
 export class ProductsController {
   constructor(

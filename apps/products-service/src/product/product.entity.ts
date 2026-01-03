@@ -27,7 +27,7 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price: number;  // Default price amount
 
-  @Column({ type: 'varchar', nullable: true, default: 'usd' })
+  @Column({ type: 'varchar', nullable: true, default: 'ron' })
   currency: string;
 
   @CreateDateColumn()

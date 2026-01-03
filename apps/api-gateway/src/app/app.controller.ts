@@ -2,12 +2,14 @@ import { Controller, Get, Inject } from '@nestjs/common';
 // import { AppService } from './app.service';
 import { ClientNames } from './client.names';
 import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Controller()
 export class AppController {
   constructor(
     // private readonly appService: AppService,
     @Inject(ClientNames.MAIL_SERVICE) private readonly mailService: ClientProxy,
+    @Inject(ClientNames.PAYMENT_SERVICE) private readonly paymentService: ClientProxy,
   ) {}
 
   @Get("send-email")
@@ -31,5 +33,11 @@ export class AppController {
       recipients: params.mailList,
       templateData: params.context,
     }
+  }
+
+  @Get("balance")
+  getBalance() {
+    const result = firstValueFrom(this.paymentService.send('getBalance', {}));
+    return result;
   }
 }

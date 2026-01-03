@@ -23,7 +23,7 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-  @MessagePattern('findOneUserByEmail')
+  @MessagePattern('findOneByEmail')
   findOneByEmail(@Payload() email: string) {
     return this.userService.findOneByEmail(email);
   }
