@@ -39,13 +39,11 @@ import { AuthService } from './auth.service';
       },
       {
         name: ClientNames.PAYMENT_SERVICE,
-        transport: Transport.RMQ,
+        transport: Transport.KAFKA,
         options: {
-          urls: ['amqp://admin:admin@localhost:5672'],
-          queue: 'payment_queue_tmp',
-          queueOptions: {
-            durable: false
-          },
+          client: {
+            brokers: ['localhost:9092'],
+          }
         },
       },
       {

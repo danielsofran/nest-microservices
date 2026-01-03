@@ -10,18 +10,19 @@ import { Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
-    transport: Transport.RMQ,
+    transport: Transport.KAFKA,
     options: {
-      urls: [process.env.RABBITMQ_URL || 'amqp://admin:admin@localhost:5672'],
-      queue: 'payment_queue_tmp',
-      queueOptions: {
-        durable: false,
+      client: {
+        brokers: ['localhost:9092'],
       },
+      consumer: {
+        groupId: 'nestjs-group-client',
+      }
     },
   });
   await app.listen();
   Logger.log(
-    `🚀 Application Products Service is running...`
+    `🚀 Application Payment Service is running...`
   );
 }
 
