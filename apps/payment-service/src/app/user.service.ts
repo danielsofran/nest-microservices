@@ -110,9 +110,9 @@ export class UserService {
       internal_user_id: user.id.toString(), // Redundant but clear
       user_role: user.role,
       google_id: user.googleId || '',
-      created_at: user.createdAt.toISOString(),
-      updated_at: user.updatedAt.toISOString(),
-      app_name: 'your-app-name', // Customize this
+      created_at: new Date(user.createdAt).toISOString(), // convert to date cause it's sent as string
+      updated_at: new Date(user.updatedAt).toISOString(),
+      app_name: 'nestjs-microservice', // Customize this
     };
   }
 

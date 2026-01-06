@@ -24,6 +24,11 @@ export class AppController {
     return this.userService.createOrGetCustomer(data)
   }
 
+  @MessagePattern('removeUser')
+  removeCustomer(id: number) {
+    return this.userService.deleteCustomer(id)
+  }
+
   @MessagePattern('addProduct')
   addProduct(data: Product) {
     return this.productService.createOrGetProduct(data)

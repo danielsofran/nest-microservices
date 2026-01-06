@@ -26,6 +26,9 @@ export class User {
   @Column({ nullable: true })
   googleId: string
 
+  @Column({ nullable: true })
+  stripeCustomerId: string
+
   @Column({ default: "user" })
   role: string
 

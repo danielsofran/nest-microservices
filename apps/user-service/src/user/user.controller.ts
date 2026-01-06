@@ -1,16 +1,26 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, Inject } from '@nestjs/common';
+import { ClientKafka, ClientProxy, MessagePattern, Payload } from '@nestjs/microservices';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { firstValueFrom } from 'rxjs';
+import { ClientNames } from '../client.names';
 
 @Controller()
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(ClientNames.PAYMENT_SERVICE)
+    private readonly paymentService: ClientKafka,
+  ) {}
 
   @MessagePattern('create')
-  create(@Payload() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async create(@Payload() createUserDto: CreateUserDto) {
+    const user = await this.userService.create(createUserDto);
+    this.paymentService.emit('addUser', user)
+    return user
+    // const id = result['id'] as string;
+    // await this.userService.update(user.id, { stripeCustomerId: id })
   }
 
   @MessagePattern('findAll')
@@ -34,12 +44,16 @@ export class UserController {
   }
 
   @MessagePattern('update')
-  update(@Payload() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+updateUserDto.id, updateUserDto);
+  async update(@Payload() updateUserDto: UpdateUserDto) {
+    const user = await this.userService.update(+updateUserDto.id, updateUserDto);
+    this.paymentService.emit('addUser', user)
+    return user;
   }
 
   @MessagePattern('remove')
-  remove(@Payload() id: number) {
-    return this.userService.remove(+id);
+  async remove(@Payload() id: number) {
+    const removed = await this.userService.remove(+id);
+    this.paymentService.emit('removeUser', id);
+    return removed;
   }
 }

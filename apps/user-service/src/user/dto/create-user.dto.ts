@@ -5,6 +5,7 @@ export class CreateUserDto {
   password: string
   googleId: string
   role: string
+  stripeCustomerId?: string
 
   constructor(partial: Partial<CreateUserDto> = {}) {
     if (partial) {
