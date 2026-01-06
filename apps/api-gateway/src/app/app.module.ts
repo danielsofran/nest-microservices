@@ -7,13 +7,32 @@ import { UserController } from './users.controller';
 import { ProductsController } from './products.controller';
 import { PassportModule } from '@nestjs/passport';
 import { PasswordStrategy } from './password.strategy';
-import { PasswordGuard } from './password.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt.strategy';
+
+const jwtModule = JwtModule.registerAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: async (configService: ConfigService) => ({
+    secret: configService.get<string>("JWT_SECRET"),
+    signOptions: {
+      expiresIn: configService.get<string>("JWT_EXPIRATION") as any,
+    },
+  }),
+})
 
 @Module({
   imports: [
+    jwtModule,
     PassportModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
+      envFilePath: ['.env', '.private.env'],
+    }),
     ClientsModule.register([
       {
         name: ClientNames.MAIL_SERVICE,
@@ -60,6 +79,6 @@ import { AuthService } from './auth.service';
     ]),
   ],
   controllers: [AppController, UserController, ProductsController, AuthController],
-  providers: [AppService, AuthService, PasswordGuard, PasswordStrategy],
+  providers: [AppService, AuthService, JwtStrategy, PasswordStrategy],
 })
 export class AppModule {}

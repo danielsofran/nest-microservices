@@ -9,9 +9,9 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ClientNames } from './client.names';
-import { PasswordGuard } from './password.guard';
+import { JwtAuthGuard } from './jwt.guard';
 
-@UseGuards(PasswordGuard)
+@UseGuards(JwtAuthGuard)
 @Controller("products")
 export class ProductsController {
   constructor(

@@ -3,6 +3,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ClientNames } from './client.names';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -10,7 +11,8 @@ export class AuthService {
 
   constructor(
     @Inject(ClientNames.USER_SERVICE)
-    private userService: ClientProxy
+    private userService: ClientProxy,
+    private jwtService: JwtService
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -70,6 +72,13 @@ export class AuthService {
 
       this.logger.error(`Unexpected error validating user ${email}: ${error.message}`, error.stack);
       throw error;
+    }
+  }
+
+  async login(user: any): Promise<any> {
+    const payload = { email: user.email, sub: user.id }
+    return {
+      access_token: this.jwtService.sign(payload),
     }
   }
 }
