@@ -1,5 +1,3 @@
-import { User } from './user';
-
 export interface Product {
   id: number;  // Stripe uses string IDs, often prefixed with 'prod_'
 
@@ -27,8 +25,4 @@ interface Element {
 
 export interface Cart {
   products: Element[]
-}
-
-export interface Payload extends Cart {
-  user: User
 }

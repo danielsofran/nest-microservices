@@ -17,7 +17,18 @@ async function bootstrap() {
       },
       consumer: {
         groupId: 'nestjs-group-client',
-      }
+      },
+      // Add these options
+      subscribe: {
+        fromBeginning: true,
+      },
+      producer: {
+        allowAutoTopicCreation: true, // Allow topic creation
+      },
+      // Configure reply patterns
+      run: {
+        autoCommit: false,
+      },
     },
   });
   await app.listen();

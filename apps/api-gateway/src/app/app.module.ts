@@ -62,7 +62,14 @@ const jwtModule = JwtModule.registerAsync({
         options: {
           client: {
             brokers: ['localhost:9092'],
-          }
+          },
+          producer: {
+            allowAutoTopicCreation: true,
+          },
+          // This is important for reply patterns
+          subscribe: {
+            fromBeginning: true,
+          },
         },
       },
       {

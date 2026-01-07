@@ -16,45 +16,7 @@ export class UserService {
 
   async createOrGetCustomer(user: User): Promise<Stripe.Customer> {
     try {
-      this.logger.log(`Processing user/customer: "${user.email}"`);
-
-      // 1. Search for existing customer by email
-      let existingCustomer: Stripe.Customer | null = null;
-
-      try {
-        const searchResult = await this.stripe.customers.search({
-          query: `email:\"${user.email}\"`,
-          limit: 1,
-        });
-
-        if (searchResult.data.length > 0) {
-          existingCustomer = searchResult.data[0];
-          this.logger.log(`Found existing customer: "${user.email}" (ID: ${existingCustomer.id})`);
-        }
-      } catch (searchError: any) {
-        this.logger.warn(`Customer search API failed: ${searchError.message}`);
-
-        // 4. Fallback: List with pagination
-        if (!existingCustomer) {
-          let hasMore = true;
-          let startingAfter: string | undefined;
-
-          while (hasMore && !existingCustomer) {
-            const customersList = await this.stripe.customers.list({
-              limit: 100,
-              email: user.email,
-              starting_after: startingAfter,
-            });
-
-            if (customersList.data.length > 0) {
-              existingCustomer = customersList.data[0];
-            }
-
-            hasMore = customersList.has_more;
-            startingAfter = customersList.data[customersList.data.length - 1]?.id;
-          }
-        }
-      }
+      const existingCustomer = await this.getCustomer(user);
 
       // If customer exists, update if needed
       if (existingCustomer) {
@@ -102,6 +64,49 @@ export class UserService {
 
       throw error;
     }
+  }
+
+  async getCustomer(user: User): Promise<Stripe.Customer|null> {
+    this.logger.log(`Processing user/customer: "${user.email}"`);
+
+    // 1. Search for existing customer by email
+    let existingCustomer: Stripe.Customer | null = null;
+
+    try {
+      const searchResult = await this.stripe.customers.search({
+        query: `email:\"${user.email}\"`,
+        limit: 1,
+      });
+
+      if (searchResult.data.length > 0) {
+        existingCustomer = searchResult.data[0];
+        this.logger.log(`Found existing customer: "${user.email}" (ID: ${existingCustomer.id})`);
+      }
+    } catch (searchError: any) {
+      this.logger.warn(`Customer search API failed: ${searchError.message}`);
+
+      // 4. Fallback: List with pagination
+      if (!existingCustomer) {
+        let hasMore = true;
+        let startingAfter: string | undefined;
+
+        while (hasMore && !existingCustomer) {
+          const customersList = await this.stripe.customers.list({
+            limit: 100,
+            email: user.email,
+            starting_after: startingAfter,
+          });
+
+          if (customersList.data.length > 0) {
+            existingCustomer = customersList.data[0];
+          }
+
+          hasMore = customersList.has_more;
+          startingAfter = customersList.data[customersList.data.length - 1]?.id;
+        }
+      }
+    }
+    return existingCustomer;
   }
 
   private getCustomerMetadata(user: User): Stripe.MetadataParam {

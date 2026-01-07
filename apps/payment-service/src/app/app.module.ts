@@ -4,6 +4,7 @@ import { StripeService } from './stripe.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProductService } from './product.service';
 import { UserService } from './user.service';
+import { PaymentService } from './payment.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { UserService } from './user.service';
   ],
   controllers: [AppController],
   providers: [
-    StripeService, ProductService, UserService,
+    StripeService, ProductService, UserService, PaymentService,
     {
       provide: 'STRIPE_API_KEY',
       useFactory: async (configService: ConfigService) =>

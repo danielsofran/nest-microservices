@@ -4,14 +4,16 @@ import { UserService } from './user.service';
 import { ProductService } from './product.service';
 import { MessagePattern } from '@nestjs/microservices';
 import { type User } from './user';
-import { type Product } from './product';
+import { type Cart, type Payload, type Product } from './product';
+import { PaymentService } from './payment.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly stripeService: StripeService,
     private readonly userService: UserService,
-    private readonly productService: ProductService
+    private readonly productService: ProductService,
+    private readonly paymentService: PaymentService
   ) {}
 
   @MessagePattern('getBalance')
@@ -21,16 +23,35 @@ export class AppController {
 
   @MessagePattern('addUser')
   addCustomer(data: User) {
-    return this.userService.createOrGetCustomer(data)
+    return this.userService.createOrGetCustomer(data);
   }
 
   @MessagePattern('removeUser')
   removeCustomer(id: number) {
-    return this.userService.deleteCustomer(id)
+    return this.userService.deleteCustomer(id);
   }
 
   @MessagePattern('addProduct')
   addProduct(data: Product) {
-    return this.productService.createOrGetProduct(data)
+    return this.productService.createOrGetProduct(data);
+  }
+
+  @MessagePattern('removeProduct')
+  removeProduct(id: number) {
+    return this.productService.removeProduct(id);
+  }
+
+  @MessagePattern('doPayment')
+  async doPayment(payload: Payload) {
+    return this.paymentService.doPaymentForMoreProducts(payload, payload.user);
+  }
+
+  @MessagePattern('getPaymentLink')
+  async getPaymentLink(payload: Payload) {
+    const link = await this.paymentService.createPaymentLinkForMoreProducts(
+      payload,
+      payload.user
+    );
+    return link ? link.url : null;
   }
 }

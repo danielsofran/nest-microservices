@@ -11,7 +11,7 @@ export class CreateProductDto {
       this.description = partial.description || ''
       this.active = partial.active !== undefined ? partial.active : true
       this.price = partial.price || 0
-      this.currency = partial.currency || 'USD'
+      this.currency = partial.currency || 'ron'
     }
   }
 }

@@ -39,34 +39,4 @@ export class StripeService {
       throw error;
     }
   }
-
-  // Create of get product
-  async createOrGetProduct(product: Product): Promise<Stripe.Product> {
-    try {
-      // Check if product already exists
-      const existingProducts = await this.stripe.products.list({ limit: 100 });
-      const existingProduct = existingProducts.data.find(product => product.name === product.name);
-
-      if (existingProduct) {
-        this.logger.log(`Product "${product.name}" already exists. Returning existing product.`);
-        return existingProduct;
-      }
-
-      // Create new product
-      const stripeProduct = await this.stripe.products.create({
-        name: product.name,
-        description: product.description,
-        default_price_data: {
-          unit_amount: product.price * 100, // Convert to cents
-          currency: product.currency,
-        },
-      });
-
-      this.logger.log(`Product "${product.name}" created successfully.`);
-      return stripeProduct;
-    } catch (error: any) {
-      this.logger.error(`Failed to create or get product "${product.name}"`, error.stack);
-      throw error;
-    }
-  }
 }
