@@ -19,9 +19,9 @@ async function bootstrap() {
         groupId: 'nestjs-group-client',
       },
       // Add these options
-      subscribe: {
-        fromBeginning: true,
-      },
+      // subscribe: {
+      //   fromBeginning: true,
+      // },
       producer: {
         allowAutoTopicCreation: true, // Allow topic creation
       },

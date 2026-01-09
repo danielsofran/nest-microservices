@@ -3,7 +3,6 @@ import { ClientKafka, ClientProxy, MessagePattern, Payload } from '@nestjs/micro
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { firstValueFrom } from 'rxjs';
 import { ClientNames } from '../client.names';
 
 @Controller()
@@ -12,12 +11,27 @@ export class UserController {
     private readonly userService: UserService,
     @Inject(ClientNames.PAYMENT_SERVICE)
     private readonly paymentService: ClientKafka,
+    @Inject(ClientNames.MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
   ) {}
 
   @MessagePattern('create')
   async create(@Payload() createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
     this.paymentService.emit('addUser', user)
+    const adminMails = await this.userService.findAdminUserMails()
+    this.mailService.emit('send', {
+      mailList: adminMails,
+      subject: 'New User Registered',
+      template: './test-template',
+      context: {
+        title: 'New User Registered',
+        message: `A new user has registered with the email: ${user.email}`,
+        type: 'info',
+        sentAt: new Date().toLocaleString(),
+        year: new Date().getFullYear(),
+      },
+    })
     return user
     // const id = result['id'] as string;
     // await this.userService.update(user.id, { stripeCustomerId: id })

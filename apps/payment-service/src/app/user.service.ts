@@ -67,6 +67,10 @@ export class UserService {
   }
 
   async getCustomer(user: User): Promise<Stripe.Customer|null> {
+    if (user.email === undefined || user.email === null) {
+      this.logger.warn(`User email is undefined or null for user ID: ${user.id}`);
+      return null;
+    }
     this.logger.log(`Processing user/customer: "${user.email}"`);
 
     // 1. Search for existing customer by email
@@ -86,33 +90,33 @@ export class UserService {
       this.logger.warn(`Customer search API failed: ${searchError.message}`);
 
       // 4. Fallback: List with pagination
-      if (!existingCustomer) {
-        let hasMore = true;
-        let startingAfter: string | undefined;
-
-        while (hasMore && !existingCustomer) {
-          const customersList = await this.stripe.customers.list({
-            limit: 100,
-            email: user.email,
-            starting_after: startingAfter,
-          });
-
-          if (customersList.data.length > 0) {
-            existingCustomer = customersList.data[0];
-          }
-
-          hasMore = customersList.has_more;
-          startingAfter = customersList.data[customersList.data.length - 1]?.id;
-        }
-      }
+      // if (!existingCustomer) {
+      //   let hasMore = true;
+      //   let startingAfter: string | undefined;
+      //
+      //   while (hasMore && !existingCustomer) {
+      //     const customersList = await this.stripe.customers.list({
+      //       limit: 100,
+      //       email: user.email,
+      //       starting_after: startingAfter,
+      //     });
+      //
+      //     if (customersList.data.length > 0) {
+      //       existingCustomer = customersList.data[0];
+      //     }
+      //
+      //     hasMore = customersList.has_more;
+      //     startingAfter = customersList.data[customersList.data.length - 1]?.id;
+      //   }
+      // }
     }
     return existingCustomer;
   }
 
   private getCustomerMetadata(user: User): Stripe.MetadataParam {
     return {
-      user_id: user.id.toString(),
-      internal_user_id: user.id.toString(), // Redundant but clear
+      user_id: user?.id?.toString(),
+      internal_user_id: user?.id?.toString(), // Redundant but clear
       user_role: user.role,
       google_id: user.googleId || '',
       created_at: new Date(user.createdAt).toISOString(), // convert to date cause it's sent as string
