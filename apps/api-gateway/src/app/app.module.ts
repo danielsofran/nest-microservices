@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { EventsModule } from './events.module';
 
 const jwtModule = JwtModule.registerAsync({
   imports: [ConfigModule],
@@ -26,6 +27,7 @@ const jwtModule = JwtModule.registerAsync({
 
 @Module({
   imports: [
+    EventsModule,
     jwtModule,
     PassportModule,
     ConfigModule.forRoot({

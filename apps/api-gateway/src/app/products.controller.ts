@@ -12,6 +12,7 @@ import { ClientNames } from './client.names';
 import { JwtAuthGuard } from './jwt.guard';
 import { type Cart } from './product';
 import { firstValueFrom } from 'rxjs';
+import { EventsService } from './events.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller("products")
@@ -21,11 +22,14 @@ export class ProductsController {
     private readonly productsService: ClientProxy,
     @Inject(ClientNames.PAYMENT_SERVICE)
     private readonly paymentService: ClientKafka,
+    private readonly eventsService: EventsService
   ) {}
 
   @Post()
-  create(@Body() createProductDto: object) {
-    return this.productsService.send("create", createProductDto)
+  async create(@Body() createProductDto: object) {
+    const product = await firstValueFrom(this.productsService.send("create", createProductDto));
+    this.eventsService.emitCreateEvent("products", product);
+    return product;
   }
 
   @Get()
@@ -39,13 +43,17 @@ export class ProductsController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateProductDto: object) {
-    return this.productsService.send("update", { id, ...updateProductDto })
+  async update(@Param("id") id: string, @Body() updateProductDto: object) {
+    const product = await firstValueFrom(this.productsService.send("update", { id, ...updateProductDto }))
+    this.eventsService.emitUpdateEvent("products", product);
+    return product;
   }
 
   @Delete(":id")
   remove(@Param("id") id: number) {
-    return this.productsService.send("remove", id)
+    this.productsService.send("remove", id)
+    this.eventsService.emitDeleteEvent("products", { id });
+    return { id }
   }
 
   @Post("payment")

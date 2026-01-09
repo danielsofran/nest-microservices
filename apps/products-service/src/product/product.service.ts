@@ -8,34 +8,35 @@ import { Product } from "./product.entity"
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectRepository(Product) private usersRepository: Repository<Product>
+    @InjectRepository(Product) private productRepository: Repository<Product>
   ) {}
   create(createUserDto: CreateProductDto) {
-    return this.usersRepository.save(createUserDto)
+    return this.productRepository.save(createUserDto)
   }
 
   findAll() {
-    return this.usersRepository.find()
+    return this.productRepository.find()
   }
 
   findOne(id: number) {
-    return this.usersRepository.findOne({
+    return this.productRepository.findOne({
       where: { id },
     })
   }
 
   async update(id: number, updateUserDto: UpdateProductDto) {
-    const entity = await this.usersRepository.findOneBy({ id })
-    const updated = await this.usersRepository.save({
+    const entity = await this.productRepository.findOneBy({ id })
+    const updatedData = {
       ...entity,
       ...updateUserDto,
-    })
-    return updated
+    }
+    await this.productRepository.update({id: id}, updatedData)
+    return updatedData
   }
 
   async remove(id: number) {
     const deleted = { id }
-    await this.usersRepository.delete(id)
+    await this.productRepository.delete(id)
     return deleted
   }
 }

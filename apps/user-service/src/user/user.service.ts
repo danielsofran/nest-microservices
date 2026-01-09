@@ -44,11 +44,12 @@ export class UserService {
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     const entity = await this.usersRepository.findOneBy({ id })
-    const updated = await this.usersRepository.save({
+    const updatedData = {
       ...entity,
       ...updateUserDto,
-    })
-    return updated
+    }
+    await this.usersRepository.update({id: id}, updatedData)
+    return updatedData
   }
 
   async remove(id: number) {
