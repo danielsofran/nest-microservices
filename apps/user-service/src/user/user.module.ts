@@ -30,26 +30,40 @@ import { ClientNames } from '../client.names';
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User]),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: ClientNames.MAIL_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://admin:admin@localhost:5672'],
-          queue: 'mails',
-          queueOptions: {
-            durable: false
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://admin:admin@localhost:5672')],
+            queue: 'mails',
+            queueOptions: {
+              durable: false
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
       {
         name: ClientNames.PAYMENT_SERVICE,
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: ['localhost:9092'],
-          }
-        },
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              brokers: configService.get<string>('KAFKA_BROKERS', 'localhost:9092').split(','),
+            },
+            producer: {
+              allowAutoTopicCreation: configService.get<boolean>('KAFKA_AUTO_CREATE_TOPICS', true),
+            },
+            subscribe: {
+              fromBeginning: configService.get<boolean>('KAFKA_FROM_BEGINNING', true),
+            },
+          },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

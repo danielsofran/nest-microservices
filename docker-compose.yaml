@@ -64,6 +64,73 @@ services:
     ports:
       - "9001:5432"
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./apps/api-gateway/Dockerfile
+    ports:
+      - "7000:7000"
+    depends_on:
+      - kafka
+      - rabbitmq
+      - postgres-users
+      - postgres-products
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      KAFKA_BROKERS: kafka:9093
+    env_file:
+      - apps/api-gateway/.env
+
+  mail-service:
+    build:
+      context: .
+      dockerfile: ./apps/mail-service/Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    env_file:
+      - apps/mail-service/.env
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: ./apps/payment-service/Dockerfile
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKERS: kafka:9093
+    env_file:
+      - apps/payment-service/.env
+
+  user-service:
+    build:
+      context: .
+      dockerfile: ./apps/user-service/Dockerfile
+    depends_on:
+      - postgres-users
+      - kafka
+      - rabbitmq
+    environment:
+      DB_HOST: postgres-users
+      DB_PORT: 5432
+      KAFKA_BROKERS: kafka:9093
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+
+  products-service:
+    build:
+      context: .
+      dockerfile: ./apps/products-service/Dockerfile
+    depends_on:
+      - postgres-products
+      - kafka
+      - rabbitmq
+    environment:
+      DB_HOST: postgres-products
+      DB_PORT: 5432
+      KAFKA_BROKERS: kafka:9093
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+
 volumes:
   rabbitmq_data:
   postgres_data:

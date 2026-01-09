@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run" type="CompoundRunConfigurationType">
+    <toRun name="api-gateway:serve" type="NxRunConfigurationType" />
+    <toRun name="mail-service:serve" type="NxRunConfigurationType" />
+    <toRun name="payment-service:serve" type="NxRunConfigurationType" />
+    <toRun name="products-service:serve" type="NxRunConfigurationType" />
+    <toRun name="user-service:serve" type="NxRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

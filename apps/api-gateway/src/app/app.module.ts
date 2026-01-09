@@ -35,57 +35,73 @@ const jwtModule = JwtModule.registerAsync({
       expandVariables: true,
       envFilePath: ['.env', '.private.env'],
     }),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: ClientNames.MAIL_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://admin:admin@localhost:5672'],
-          queue: 'mails',
-          queueOptions: {
-            durable: false
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://admin:admin@localhost:5672')],
+            queue: 'mails',
+            queueOptions: {
+              durable: false
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
       {
         name: ClientNames.USER_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://admin:admin@localhost:5672'],
-          queue: 'user_queue',
-          queueOptions: {
-            durable: true
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://admin:admin@localhost:5672')],
+            queue: 'user_queue',
+            queueOptions: {
+              durable: true
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
       {
         name: ClientNames.PAYMENT_SERVICE,
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: ['localhost:9092'],
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              brokers: configService.get<string>('KAFKA_BROKERS', 'localhost:9092').split(','),
+            },
+            producer: {
+              allowAutoTopicCreation: configService.get<boolean>('KAFKA_AUTO_CREATE_TOPICS', true),
+            },
+            subscribe: {
+              fromBeginning: configService.get<boolean>('KAFKA_FROM_BEGINNING', true),
+            },
           },
-          producer: {
-            allowAutoTopicCreation: true,
-          },
-          // This is important for reply patterns
-          subscribe: {
-            fromBeginning: true,
-          },
-        },
+        }),
+        inject: [ConfigService],
       },
       {
         name: ClientNames.PRODUCTS_SERVICE,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://admin:admin@localhost:5672'],
-          queue: 'product_queue',
-          queueOptions: {
-            durable: true
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://admin:admin@localhost:5672')],
+            queue: 'product_queue',
+            queueOptions: {
+              durable: true
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
+
   ],
   controllers: [AppController, UserController, ProductsController, AuthController],
   providers: [AppService, AuthService, JwtStrategy, PasswordStrategy],
