@@ -80,4 +80,12 @@ export class ProductsController {
     const rez = await firstValueFrom(this.paymentService.send("getPaymentLink", { products: cart.products, user }));
     return rez;
   }
+
+  @Delete(":id")
+  async delete(@Param("id") id: number) {
+    // TODO: not working?
+    this.productsService.send("removeProduct", id)
+    this.eventsService.emitDeleteEvent("products", { id });
+    return { id }
+  }
 }
