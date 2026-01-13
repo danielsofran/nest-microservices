@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
 import { Cart, Product } from './product';
-import { UserService } from './user.service';
-import { ProductService } from './product.service';
+import { UserStripeService } from './user.stripe.service';
+import { ProductStripeService } from './product.stripe.service';
 import { User } from './user';
 import { ConfigService } from '@nestjs/config';
 
@@ -15,8 +15,8 @@ export class PaymentService {
   constructor(
     @Inject('STRIPE_API_KEY')
     private readonly apiKey: string,
-    private readonly productService: ProductService,
-    private readonly userService: UserService,
+    private readonly productService: ProductStripeService,
+    private readonly userService: UserStripeService,
     private readonly configService: ConfigService
   ) {
     this.logger.log(apiKey);

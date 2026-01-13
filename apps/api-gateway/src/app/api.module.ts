@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ApiController } from './api.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ClientNames } from './client.names';
-import { UserController } from './users.controller';
-import { ProductsController } from './products.controller';
+import { UserController } from './users.api.controller';
+import { ProductsApiController } from './products.api.controller';
 import { PassportModule } from '@nestjs/passport';
 import { PasswordStrategy } from './password.strategy';
 import { AuthController } from './auth.controller';
@@ -103,7 +102,7 @@ const jwtModule = JwtModule.registerAsync({
     ]),
 
   ],
-  controllers: [AppController, UserController, ProductsController, AuthController],
-  providers: [AppService, AuthService, JwtStrategy, PasswordStrategy],
+  controllers: [ApiController, UserController, ProductsApiController, AuthController],
+  providers: [AuthService, JwtStrategy, PasswordStrategy],
 })
-export class AppModule {}
+export class ApiModule {}

@@ -1,18 +1,18 @@
 import { Controller } from '@nestjs/common';
 import { StripeService } from './stripe.service';
-import { UserService } from './user.service';
-import { ProductService } from './product.service';
+import { UserStripeService } from './user.stripe.service';
+import { ProductStripeService } from './product.stripe.service';
 import { MessagePattern } from '@nestjs/microservices';
 import { type User } from './user';
 import { type Cart, type Payload, type Product } from './product';
 import { PaymentService } from './payment.service';
 
 @Controller()
-export class AppController {
+export class PaymentController {
   constructor(
     private readonly stripeService: StripeService,
-    private readonly userService: UserService,
-    private readonly productService: ProductService,
+    private readonly userService: UserStripeService,
+    private readonly productService: ProductStripeService,
     private readonly paymentService: PaymentService
   ) {}
 

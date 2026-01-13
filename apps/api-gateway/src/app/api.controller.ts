@@ -5,7 +5,7 @@ import { ClientProxy, ClientKafka } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
 @Controller()
-export class AppController {
+export class ApiController {
   constructor(
     // private readonly appService: AppService,
     @Inject(ClientNames.MAIL_SERVICE) private readonly mailService: ClientProxy,

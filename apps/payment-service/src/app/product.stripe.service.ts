@@ -3,9 +3,9 @@ import Stripe from 'stripe';
 import { Product } from './product';
 
 @Injectable()
-export class ProductService {
+export class ProductStripeService {
   private stripe: Stripe
-  private readonly logger = new Logger(ProductService.name)
+  private readonly logger = new Logger(ProductStripeService.name)
 
   constructor(
     @Inject("STRIPE_API_KEY")

@@ -16,7 +16,7 @@ import { EventsService } from './events.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller("products")
-export class ProductsController {
+export class ProductsApiController {
   constructor(
     @Inject(ClientNames.PRODUCTS_SERVICE)
     private readonly productsService: ClientProxy,

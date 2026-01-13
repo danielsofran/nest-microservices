@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
+import { PaymentController } from './payment.controller';
 import { StripeService } from './stripe.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProductService } from './product.service';
-import { UserService } from './user.service';
+import { ProductStripeService } from './product.stripe.service';
+import { UserStripeService } from './user.stripe.service';
 import { PaymentService } from './payment.service';
 
 @Module({
@@ -14,9 +14,9 @@ import { PaymentService } from './payment.service';
       envFilePath: ['.env', '.private.env'],
     })
   ],
-  controllers: [AppController],
+  controllers: [PaymentController],
   providers: [
-    StripeService, ProductService, UserService, PaymentService,
+    StripeService, ProductStripeService, UserStripeService, PaymentService,
     {
       provide: 'STRIPE_API_KEY',
       useFactory: async (configService: ConfigService) =>
