@@ -28,7 +28,9 @@ STRIPE_KEY=sk_test_...
 STRIPE_SUCCESS_REDIRECT_URL=http://localhost:3000/payment/success
 ```
 
-<!-- Image: Stripe Dashboard – Test API Keys -->
+![Stripe Dashboard](StripeDashboard.png)
+
+![Stripe API Keys](Keys.png)
 
 Stripe will act as an external bounded context. No service except the payment service talks to Stripe directly.
 
@@ -80,7 +82,7 @@ Transport choices
 | Payment events        | Kafka        |
 | External payments     | Stripe API   |
 
-<!-- Image: Microservice Architecture Diagram -->
+![Microservice Architecture Diagram](SystemDiagram.png)
 
 ## 4. Users Microservice (Data Ownership)
 
