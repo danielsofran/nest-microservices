@@ -1,104 +1,303 @@
-# New Nx Repository
+# Synchronizing with Stripe API: an Event-Driven Payment Platform with Nx and NestJS Microservices
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Modern applications rarely live as a single monolith. Payments, users, products, emails, and authentication all evolve at different speeds and often require different scalability and reliability guarantees.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+In this article, we will build a Stripe-powered payment platform using:
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- Nx for monorepo management
+- NestJS microservices
+- Stripe (sandbox / test mode)
+- Kafka for domain events
+- RabbitMQ for request-response and side effects
+- PostgreSQL for service-local persistence
 
-## Generate a library
+The result is a clean, event-driven architecture where domain services own their data, and Stripe is synchronized asynchronously.
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+## 1. Stripe Sandbox Setup
+
+Before writing any code, configure Stripe in test mode.
+
+1. Create a Stripe account
+2. Switch to Test Mode
+3. Copy STRIPE_SECRET_KEY
+
+Store these in your environment:
+
+```env
+STRIPE_KEY=sk_test_...
+STRIPE_SUCCESS_REDIRECT_URL=http://localhost:3000/payment/success
 ```
 
-## Run tasks
+<!-- Image: Stripe Dashboard – Test API Keys -->
 
-To build the library use:
+Stripe will act as an external bounded context. No service except the payment service talks to Stripe directly.
 
-```sh
-npx nx build pkg1
-```
+## 2. Nx Monorepo Structure
 
-To run any task with Nx use:
+Nx allows us to colocate multiple NestJS applications while keeping boundaries explicit.
 
-```sh
-npx nx <target> <project-name>
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
+Our workspace looks conceptually like this:
 
 ```
-npx nx release
+apps/
+├─ gateway
+├─ users-ms
+├─ products-ms
+├─ payments-ms
+└─ mail-ms
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+Each microservice:
+- Has its own database 
+- Exposes message patterns, not HTTP 
+- Communicates through a broker
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 3.Architecture Overview
 
-## Keep TypeScript project references up to date
+At a high level:
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+- Gateway
+    - HTTP entry point
+  - Authentication
+      - Orchestration
+- Users Service
+    - Owns users table
+  - Emits user lifecycle events
+- Products Service
+    - Owns products table
+  - Emits product lifecycle events
+- Payments Service
+    - Owns Stripe synchronization
+  - Creates customers, products, prices, payments
+- Mail Service
+    - Sends emails asynchronously
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+Transport choices
 
-```sh
-npx nx sync
+| Purpose               | Transport    |
+|-----------------------|--------------|
+| CRUD request/response | RabbitMQ     |
+| Payment events        | Kafka        |
+| External payments     | Stripe API   |
+
+<!-- Image: Microservice Architecture Diagram -->
+
+## 4. Users Microservice (Data Ownership)
+
+The users service owns user persistence and nothing else.
+
+Key responsibilities:
+
+- Store users in PostgreSQL
+
+- Emit events when users change
+
+Example message handler:
+
+```typescript
+@MessagePattern('create')
+async create(dto: CreateUserDto) {
+    const user = await this.userService.create(dto);
+    this.paymentClient.emit('addUser', user);
+    return user;
+}
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+**Important design choice**
 
-```sh
-npx nx sync:check
+The users service does not store Stripe IDs as a source of truth. Stripe synchronization is delegated to the payment service.
+
+## 5. Products Microservice (Catalog Ownership)
+
+Products follow the same pattern:
+
+- PostgreSQL for persistence
+
+- Emits events on create/update/delete
+
+- No Stripe logic
+
+Minimal example:
+
+```typescript
+@MessagePattern('update')
+async update(dto: UpdateProductDto) {
+    const product = await this.productService.update(dto.id, dto);
+    this.paymentClient.emit('addProduct', product);
+    return product;
+}
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+This creates eventual consistency:
 
-## Nx Cloud
+- The product exists immediately in the catalog
 
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+- Stripe is updated asynchronously
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 6. Payment Microservice (Stripe Integration)
 
-### Set up CI (non-Github Actions CI)
+This is the most critical service.
 
-**Note:** This is only required if your CI provider is not GitHub Actions.
+#### Responsibilities
 
-Use the following command to configure a CI workflow for your workspace:
+- Create or update:
 
-```sh
-npx nx g ci-workflow
+    - Stripe customers
+
+  - Stripe products
+
+      - Stripe prices
+
+- Handle:
+  - PaymentIntents
+  - PaymentLinks
+
+**Never expose Stripe directly to other services**
+
+#### Kafka Consumers
+
+The payment service listens to Kafka topics:
+
+```typescript
+@MessagePattern('addUser')
+createOrUpdateCustomer(user: User) {
+    return this.userStripeService.createOrGetCustomer(user);
+}
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```typescript
+@MessagePattern('addProduct')
+syncProduct(product: Product) {
+    return this.productStripeService.createOrGetProduct(product);
+}
+```
 
-## Install Nx Console
+### Checkout Flow
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+For multiple products, the gateway asks the payment service to generate a link:
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```typescript
+this.paymentClient.send('getPaymentLink', {
+    products: cart.products,
+    user
+});
+```
 
-## Useful links
+Inside the payment service:
 
-Learn more:
+- Products are resolved to Stripe prices
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- A PaymentLink is created
 
-And join the Nx community:
+- The URL is returned to the client
 
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 7. Gateway: HTTP to Messaging Bridge
+
+The gateway is the only HTTP-facing application.
+
+Responsibilities:
+
+- Authentication (JWT)
+
+- Input validation
+
+- Mapping HTTP → messages
+
+Example product endpoint:
+
+```typescript
+@Post()
+async create(@Body() dto: object) {
+    return this.productsClient.send('create', dto);
+}
+```
+
+Example payment endpoint:
+
+```typescript
+@Post('payment/link')
+async paymentLink(@Request() req, @Body() cart: Cart) {
+    return this.paymentClient.send('getPaymentLink', {
+        products: cart.products,
+        user: {
+            id: req.user.userId,
+            email: req.user.email,
+        },
+    });
+}
+```
+
+The gateway never:
+
+- Touches databases
+- Talks to Stripe
+- Contains business logic
+
+## 8. Microservice Bootstrapping
+
+Each service boots independently with its transport:
+
+RMQ-based services
+```typescript
+NestFactory.createMicroservice(AppModule, {
+    transport: Transport.RMQ,
+    options: {
+        urls: [process.env.RABBITMQ_URL],
+        queue: 'user_queue',
+        queueOptions: { durable: true },
+    },
+});
+```
+
+Kafka-based payment service
+```typescript
+NestFactory.createMicroservice(AppModule, {
+    transport: Transport.KAFKA,
+    options: {
+        client: {
+            brokers: process.env.KAFKA_BROKERS.split(','),
+        },
+        consumer: {
+            groupId: 'payments-group',
+        },
+    },
+});
+```
+
+Each service is independently deployable.
+
+## 9. Why This Architecture Works
+
+#### Clear boundaries
+
+- Each service owns its data
+
+- Stripe logic is centralized
+
+#### Event-driven
+
+- No tight coupling
+
+- Services evolve independently
+
+#### Production-ready patterns
+
+- Idempotent Stripe sync
+
+- Async side effects
+
+- Scalable transports
+
+10. Final Thoughts
+
+This setup mirrors real-world payment platforms:
+
+- Stripe treated as an external system
+
+- Domain events drive synchronization
+
+- Gateways remain thin
+
+- Microservices remain focused
+
+If you are building payments in a microservice architecture, this pattern scales well, remains understandable, and keeps Stripe complexity contained.
